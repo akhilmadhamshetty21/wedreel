@@ -248,6 +248,7 @@ function UploadModal({ onClose, onConfetti }) {
   const [scanMsg, setScanMsg] = useStateP("Uploading files…");
   const [error, setError] = useStateP(null);
   const fileRef = useRefP(null);
+  const cameraRef = useRefP(null);
 
   function toggleTag(eid) {
     setTagged(t => t.includes(eid) ? t.filter(x => x !== eid) : [...t, eid]);
@@ -375,6 +376,7 @@ function UploadModal({ onClose, onConfetti }) {
   return (
     <div className="modal-backdrop" onClick={onClose}>
       <div className="modal" onClick={e => e.stopPropagation()}>
+        <div className="modal-handle" />
         <button className="modal-close" onClick={onClose} aria-label="Close"><Icon.Close s={16} /></button>
 
         {/* ── IDLE: tag events + dropzone ── */}
@@ -410,6 +412,7 @@ function UploadModal({ onClose, onConfetti }) {
               {!tagged.length && <p className="tag-hint">Tag at least one event to continue.</p>}
             </div>
 
+            {/* Desktop: drag-and-drop zone */}
             <div className={"dropzone " + (dragOver ? "hover" : "") + ((!tagged.length) ? " disabled" : "")}
               onDragOver={e => { if (tagged.length) { e.preventDefault(); setDragOver(true); } }}
               onDragLeave={() => setDragOver(false)}
@@ -422,9 +425,25 @@ function UploadModal({ onClose, onConfetti }) {
                 onClick={e => { e.stopPropagation(); fileRef.current && fileRef.current.click(); }}>
                 <Icon.Sparkle s={14} /> Choose Photos
               </button>
-              <input ref={fileRef} type="file" multiple accept="image/*,video/*" hidden
-                onChange={e => handleFiles(e.target.files)} />
             </div>
+
+            {/* Mobile: two large tap targets */}
+            <div className="upload-actions">
+              <button className="btn btn-ghost" disabled={!tagged.length}
+                onClick={() => fileRef.current && fileRef.current.click()}>
+                <Icon.Upload s={16} /> Gallery
+              </button>
+              <button className="btn btn-primary" disabled={!tagged.length}
+                onClick={() => cameraRef.current && cameraRef.current.click()}>
+                <Icon.Camera s={16} /> Camera
+              </button>
+            </div>
+
+            {/* File inputs — always in DOM, used by both desktop and mobile */}
+            <input ref={fileRef} type="file" multiple accept="image/*,video/*" hidden
+              onChange={e => handleFiles(e.target.files)} />
+            <input ref={cameraRef} type="file" accept="image/*,video/*" capture="environment" hidden
+              onChange={e => handleFiles(e.target.files)} />
           </div>
         )}
 

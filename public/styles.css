@@ -2347,3 +2347,83 @@ footer.foot .by {
     repeating-linear-gradient(45deg, rgba(232, 200, 117, .08) 0 12px, transparent 12px 24px);
   color: rgba(232, 200, 117, .55);
 }
+
+/* ── Mobile-first: upload modal as bottom sheet ── */
+.modal-handle {
+  width: 44px;
+  height: 5px;
+  border-radius: 999px;
+  background: rgba(168, 137, 63, .3);
+  margin: 0 auto 20px;
+  display: none;
+}
+
+.upload-actions {
+  display: none;
+}
+
+@media (max-width: 640px) {
+  .modal-backdrop {
+    align-items: flex-end;
+    padding: 0;
+  }
+
+  .modal {
+    width: 100%;
+    max-height: 92dvh;
+    border-radius: 28px 28px 0 0;
+    padding: 16px 20px calc(env(safe-area-inset-bottom, 0px) + 28px);
+    animation: sheetUp .38s cubic-bezier(.2, .7, .2, 1);
+  }
+
+  @keyframes sheetUp {
+    from { transform: translateY(100%); }
+  }
+
+  .modal-handle { display: block; }
+
+  .modal h3 { font-size: 24px; }
+  .modal p.sub { font-size: 13px; margin-bottom: 14px; }
+  .tag-section { margin: 12px 0 14px; }
+
+  /* Chips scroll horizontally — no wrapping */
+  .event-chip-row {
+    flex-wrap: nowrap;
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
+    padding-bottom: 6px;
+    scrollbar-width: none;
+  }
+  .event-chip-row::-webkit-scrollbar { display: none; }
+  .event-chip { flex-shrink: 0; }
+
+  /* Hide the desktop drag-drop zone; show action buttons instead */
+  .dropzone { display: none; }
+
+  .upload-actions {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 12px;
+    margin-top: 6px;
+  }
+
+  .upload-actions .btn {
+    justify-content: center;
+    padding: 18px 12px;
+    font-size: 13px;
+    letter-spacing: .12em;
+    min-height: 60px;
+  }
+
+  /* Faces grid — smaller chips on mobile */
+  .face-grid {
+    grid-template-columns: repeat(auto-fill, minmax(64px, 1fr));
+    gap: 10px;
+  }
+
+  /* Progress step — less top padding */
+  .modal > div[style*="padding"] {
+    padding-top: 16px !important;
+    padding-bottom: 16px !important;
+  }
+}
