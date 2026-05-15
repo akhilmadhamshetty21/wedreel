@@ -2,7 +2,10 @@
 const fs   = require('fs');
 const path = require('path');
 
-const DB_PATH = path.join(__dirname, 'wedding-data.json');
+// /tmp is the only writable path on Vercel serverless; local dev uses project root
+const DB_PATH = process.env.VERCEL
+  ? '/tmp/wedding-data.json'
+  : path.join(__dirname, 'wedding-data.json');
 
 const EMPTY = { photos: [], faces: [] };
 
