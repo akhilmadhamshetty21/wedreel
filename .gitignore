@@ -1,0 +1,5 @@
+node_modules/
+.env
+wedding-data.json
+public/uploads/
+public/face_crops/
