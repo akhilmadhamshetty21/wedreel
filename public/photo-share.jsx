@@ -61,6 +61,30 @@ function cropFaceCanvas(img, box) {
   return canvas.toDataURL('image/jpeg', 0.8);
 }
 
+/* Compress an image file to max 1920px, ~85% quality — keeps well under Vercel's 4.5 MB limit */
+function compressImage(file, maxDim = 1920, quality = 0.85) {
+  return new Promise(resolve => {
+    if (!file.type.startsWith('image/')) return resolve(file);
+    const blobUrl = URL.createObjectURL(file);
+    const img = new Image();
+    img.onload = () => {
+      URL.revokeObjectURL(blobUrl);
+      const ratio = Math.min(maxDim / img.width, maxDim / img.height, 1);
+      if (ratio >= 1) return resolve(file);
+      const canvas = document.createElement('canvas');
+      canvas.width = Math.round(img.width * ratio);
+      canvas.height = Math.round(img.height * ratio);
+      canvas.getContext('2d').drawImage(img, 0, 0, canvas.width, canvas.height);
+      canvas.toBlob(
+        blob => resolve(new File([blob], file.name.replace(/\.[^.]+$/, '.jpg'), { type: 'image/jpeg' })),
+        'image/jpeg', quality
+      );
+    };
+    img.onerror = () => { URL.revokeObjectURL(blobUrl); resolve(file); };
+    img.src = blobUrl;
+  });
+}
+
 function euclidean(a, b) {
   let s = 0;
   for (let i = 0; i < a.length; i++) { const d = a[i] - b[i]; s += d * d; }
@@ -258,19 +282,35 @@ function UploadModal({ onClose, onConfetti }) {
     if (!tagged.length || !files?.length) return;
     setError(null);
     setStep("uploading");
-    setProgress(10);
+    setProgress(5);
 
     try {
-      // 1. Upload files
-      setScanMsg("Uploading your photos…");
-      const fd = new FormData();
-      Array.from(files).forEach(f => fd.append('photos', f));
-      fd.append('event_ids', JSON.stringify(tagged));
+      // 1. Compress + upload one file at a time (Vercel has a 4.5 MB request limit)
+      const fileArray = Array.from(files);
+      const total = fileArray.length;
+      const allPhotos = [];
 
-      const uploadRes = await fetch('/api/upload', { method: 'POST', body: fd });
-      if (!uploadRes.ok) throw new Error('Upload failed: ' + uploadRes.statusText);
-      const { photos } = await uploadRes.json();
+      for (let i = 0; i < fileArray.length; i++) {
+        setScanMsg(`Preparing ${i + 1} of ${total}…`);
+        const compressed = await compressImage(fileArray[i]);
 
+        setScanMsg(`Uploading ${i + 1} of ${total}…`);
+        const fd = new FormData();
+        fd.append('photos', compressed);
+        fd.append('event_ids', JSON.stringify(tagged));
+
+        const uploadRes = await fetch('/api/upload', { method: 'POST', body: fd });
+        if (!uploadRes.ok) {
+          let msg = uploadRes.statusText;
+          try { const d = await uploadRes.json(); msg = d.error || msg; } catch {}
+          throw new Error('Upload failed: ' + msg);
+        }
+        const { photos } = await uploadRes.json();
+        allPhotos.push(...photos);
+        setProgress(5 + Math.round((i + 1) / total * 35));
+      }
+
+      const photos = allPhotos;
       setUploaded(photos);
       setProgress(40);
       onConfetti && onConfetti();
