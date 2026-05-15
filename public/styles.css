@@ -2348,6 +2348,110 @@ footer.foot .by {
   color: rgba(232, 200, 117, .55);
 }
 
+/* ── Gallery page main layout ── */
+.gallery-main {
+  display: flex;
+  flex-direction: column;
+  height: 100vh;
+  overflow: hidden;
+}
+
+@media (max-width: 640px) {
+  /* Switch to natural page scroll on mobile */
+  .gallery-main {
+    height: auto;
+    min-height: 100dvh;
+    overflow: visible;
+  }
+
+  /* Allow flex children to grow freely */
+  .gallery-page-layout {
+    flex: none;
+    min-height: auto;
+    overflow: visible;
+  }
+
+  /* Compact gallery header */
+  .gallery-top {
+    padding: 8px 0 6px;
+  }
+
+  .gallery-top-inner {
+    flex-direction: row;
+    align-items: center;
+    gap: 12px;
+  }
+
+  .gallery-top-inner h2 {
+    font-size: 16px !important;
+    margin: 2px 0 0 !important;
+  }
+
+  /* Hide stats panel — count shown inline in filter row */
+  .gallery-top-inner .gallery-stats {
+    display: none;
+  }
+
+  /* Sticky filter bar just below the nav */
+  .gallery-filter-wrap {
+    position: sticky;
+    top: 62px;
+    z-index: 20;
+    background: var(--ivory);
+    box-shadow: 0 4px 16px -4px rgba(92, 26, 36, .12);
+  }
+
+  .gallery-filter-wrap .gallery-filters {
+    padding: 8px 12px;
+    border-radius: 0;
+    border-left: none;
+    border-right: none;
+    border-top: none;
+  }
+
+  .gallery-filter-row {
+    padding: 5px 0;
+  }
+
+  /* Event chips scroll horizontally */
+  .gallery-filter-row .event-chip-row {
+    flex-wrap: nowrap;
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
+    scrollbar-width: none;
+    padding-bottom: 2px;
+  }
+  .gallery-filter-row .event-chip-row::-webkit-scrollbar { display: none; }
+
+  /* Hide face-filter row and sort row to maximise photo area */
+  .gallery-filters .gallery-filter-row:nth-child(2),
+  .gallery-filters .gallery-filter-row:nth-child(3) {
+    display: none;
+  }
+
+  /* Photos fill the rest of the page naturally */
+  .gallery-photo-scroll {
+    flex: none;
+    min-height: auto;
+    overflow-y: visible;
+    padding: 12px 0 100px;
+  }
+
+  /* Smaller photo cards — 2 columns, approx 150 px tall */
+  .gallery-item img {
+    min-height: 150px;
+  }
+
+  .masonry-gallery {
+    column-gap: 8px;
+  }
+
+  .gallery-item {
+    margin-bottom: 8px;
+    border-radius: 12px;
+  }
+}
+
 /* ── Mobile-first: upload modal as bottom sheet ── */
 .modal-handle {
   width: 44px;

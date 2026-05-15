@@ -98,7 +98,7 @@ function GalleryApp() {
         <span className="label">Upload Photos</span>
       </button>
 
-      <main style={{ display: "flex", flexDirection: "column", height: "100vh", overflow: "hidden", paddingTop: 86 }}>
+      <main className="gallery-main" style={{ paddingTop: 86 }}>
         <FullGallery onOpenUpload={() => setUploadOpen(true)} />
       </main>
 
