@@ -53,7 +53,7 @@ app.post('/api/upload', upload.array('photos', 100), async (req, res) => {
       };
     }));
 
-    db.insertPhotos(photos);
+    await db.insertPhotos(photos);
 
     res.json({
       success: true,
@@ -70,7 +70,7 @@ app.post('/api/upload', upload.array('photos', 100), async (req, res) => {
 app.post('/api/photos/:photoId/faces', async (req, res) => {
   try {
     const { photoId } = req.params;
-    const photo = db.getPhoto(photoId);
+    const photo = await db.getPhoto(photoId);
     if (!photo) return res.status(404).json({ error: 'Photo not found' });
 
     const { faces = [] } = req.body;
@@ -100,7 +100,7 @@ app.post('/api/photos/:photoId/faces', async (req, res) => {
       };
     }));
 
-    db.insertFaces(saved);
+    await db.insertFaces(saved);
 
     res.json({
       success: true,
@@ -116,7 +116,7 @@ app.post('/api/photos/:photoId/faces', async (req, res) => {
 app.get('/api/photos', (req, res) => {
   try {
     const { event = 'all', sort = 'recent', limit = '600' } = req.query;
-    let photos = db.getPhotos({ event, sort });
+    let photos = await db.getPhotos({ event, sort });
     photos = photos.slice(0, Math.min(parseInt(limit) || 600, 2000));
     res.json({ photos, total: photos.length });
   } catch (err) {
@@ -127,7 +127,7 @@ app.get('/api/photos', (req, res) => {
 // All face descriptors with photo context
 app.get('/api/faces', (req, res) => {
   try {
-    const faces = db.getFaces().map(f => ({
+    const faces = (await db.getFaces()).map(f => ({
       id:         f.id,
       photo_id:   f.photo_id,
       photo_url:  f.photo_url,
@@ -153,7 +153,7 @@ app.get('/api/img/:driveId', async (req, res) => {
 
 // Stats
 app.get('/api/stats', (req, res) => {
-  try { res.json(db.stats()); }
+  try { res.json(await db.stats()); }
   catch (err) { res.status(500).json({ error: err.message }); }
 });
 

@@ -1,66 +1,97 @@
-/* Simple JSON-file database — no native modules required */
+'use strict';
 const fs   = require('fs');
 const path = require('path');
 
-// /tmp is the only writable path on Vercel serverless; local dev uses project root
+/* ── Upstash Redis via REST (no native module needed) ────────── */
+const REDIS_URL   = process.env.UPSTASH_REDIS_REST_URL;
+const REDIS_TOKEN = process.env.UPSTASH_REDIS_REST_TOKEN;
+const USE_REDIS   = !!(REDIS_URL && REDIS_TOKEN);
+
+async function redis(...args) {
+  const res = await fetch(REDIS_URL, {
+    method : 'POST',
+    headers: { Authorization: `Bearer ${REDIS_TOKEN}`, 'Content-Type': 'application/json' },
+    body   : JSON.stringify(args),
+  });
+  const { result, error } = await res.json();
+  if (error) throw new Error('Redis: ' + error);
+  return result;
+}
+
+async function rList(key) {
+  const raw = await redis('LRANGE', key, '0', '-1');
+  return (raw || []).map(s => JSON.parse(s));
+}
+
+/* ── File fallback (local dev without Redis) ─────────────────── */
 const DB_PATH = process.env.VERCEL
   ? '/tmp/wedding-data.json'
   : path.join(__dirname, 'wedding-data.json');
-
 const EMPTY = { photos: [], faces: [] };
 
-function read() {
+function fRead() {
   if (!fs.existsSync(DB_PATH)) return structuredClone(EMPTY);
   try { return JSON.parse(fs.readFileSync(DB_PATH, 'utf8')); }
   catch { return structuredClone(EMPTY); }
 }
+function fWrite(data) { fs.writeFileSync(DB_PATH, JSON.stringify(data), 'utf8'); }
 
-function write(data) {
-  fs.writeFileSync(DB_PATH, JSON.stringify(data), 'utf8');
-}
-
-// ── Exported helpers ──────────────────────────────────────────────────────────
-
-function insertPhotos(photosArr) {
-  const db = read();
-  db.photos.push(...photosArr);
-  write(db);
-}
-
-function insertFaces(facesArr) {
-  const db = read();
-  db.faces.push(...facesArr);
-  write(db);
-}
-
-function getPhoto(id) {
-  return read().photos.find(p => p.id === id) || null;
-}
-
-function getPhotos({ event = 'all', sort = 'recent' } = {}) {
-  let list = read().photos;
-  if (event && event !== 'all') {
-    list = list.filter(p => (p.event_ids || []).includes(event));
+/* ── Exported helpers ────────────────────────────────────────── */
+async function insertPhotos(arr) {
+  if (USE_REDIS) {
+    for (const p of arr) await redis('RPUSH', 'w:photos', JSON.stringify(p));
+    return;
   }
-  list = [...list].sort((a, b) =>
+  const db = fRead(); db.photos.push(...arr); fWrite(db);
+}
+
+async function insertFaces(arr) {
+  if (USE_REDIS) {
+    for (const f of arr) await redis('RPUSH', 'w:faces', JSON.stringify(f));
+    return;
+  }
+  const db = fRead(); db.faces.push(...arr); fWrite(db);
+}
+
+async function getPhoto(id) {
+  if (USE_REDIS) {
+    const all = await rList('w:photos');
+    return all.find(p => p.id === id) || null;
+  }
+  return fRead().photos.find(p => p.id === id) || null;
+}
+
+async function getPhotos({ event = 'all', sort = 'recent' } = {}) {
+  let list = USE_REDIS ? await rList('w:photos') : fRead().photos;
+  if (event && event !== 'all') list = list.filter(p => (p.event_ids || []).includes(event));
+  return [...list].sort((a, b) =>
     sort === 'event'
       ? (a.event_ids?.[0] || '').localeCompare(b.event_ids?.[0] || '')
       : (b.upload_time || 0) - (a.upload_time || 0)
   );
-  return list;
 }
 
-function getFaces() {
-  const db = read();
-  return db.faces.map(f => {
-    const photo = db.photos.find(p => p.id === f.photo_id);
+async function getFaces() {
+  let faces, photos;
+  if (USE_REDIS) {
+    [faces, photos] = await Promise.all([rList('w:faces'), rList('w:photos')]);
+  } else {
+    const db = fRead(); faces = db.faces; photos = db.photos;
+  }
+  return faces.map(f => {
+    const photo = photos.find(p => p.id === f.photo_id);
     return { ...f, photo_url: photo?.url, event_ids: photo?.event_ids || ['wedding'] };
   });
 }
 
-function stats() {
-  const { photos, faces } = read();
-  const events = ['haldi','mehendi','sangeet','wedding','reception'];
+async function stats() {
+  let photos, faces;
+  if (USE_REDIS) {
+    [photos, faces] = await Promise.all([rList('w:photos'), rList('w:faces')]);
+  } else {
+    const db = fRead(); photos = db.photos; faces = db.faces;
+  }
+  const events = ['haldi', 'mehendi', 'sangeet', 'wedding', 'reception'];
   const eventCounts = { all: photos.length };
   events.forEach(ev => {
     eventCounts[ev] = photos.filter(p => (p.event_ids || []).includes(ev)).length;
