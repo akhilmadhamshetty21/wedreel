@@ -55,24 +55,63 @@ function FaceChipSm({ face, active, onClick }) {
 }
 function clusters_idx(cl) { return (cl.id || "").charCodeAt(0) % 8; }
 
+/* ── Full-screen lightbox with download ── */
+function PhotoLightbox({ photo, onClose }) {
+  useEffectG(() => {
+    const onKey = e => { if (e.key === 'Escape') onClose(); };
+    document.addEventListener('keydown', onKey);
+    document.body.style.overflow = 'hidden';
+    return () => {
+      document.removeEventListener('keydown', onKey);
+      document.body.style.overflow = '';
+    };
+  }, []);
+
+  return (
+    <div className="lightbox-backdrop" onClick={onClose}>
+      <div className="lightbox" onClick={e => e.stopPropagation()}>
+        <button className="lightbox-close" onClick={onClose} aria-label="Close">
+          <Icon.Close s={18} />
+        </button>
+        <img src={photo.url} alt={photo.orig_name || "photo"} className="lightbox-img" />
+        <div className="lightbox-actions">
+          <a href={photo.url} download={photo.orig_name || "photo.jpg"}
+            className="btn btn-primary" onClick={e => e.stopPropagation()}>
+            ↓ Download
+          </a>
+          <button className="btn btn-ghost lightbox-close-btn" onClick={onClose}>Close</button>
+        </div>
+      </div>
+    </div>
+  );
+}
+
 /* ── Single gallery photo card ── */
 function GalleryPhotoCard({ photo, animDelay }) {
   const [err, setErr] = useStateG(false);
+  const [open, setOpen] = useStateG(false);
   const eventName = (window.EVENT_DATA || []).find(e => (photo.event_ids || []).includes(e.id))?.name
                      || (photo.event_ids?.[0] || "");
   return (
-    <div className="gallery-item" style={{ animationDelay: animDelay + "s" }}>
-      {err
-        ? <PhotoPlaceholder idx={0} eventId={(photo.event_ids||[])[0]} />
-        : <img src={photo.url} alt={photo.orig_name || "photo"}
-               style={{ width: "100%", display: "block" }}
-               loading="lazy"
-               onError={() => setErr(true)} />
-      }
-      <div className="gallery-item-overlay">
-        {eventName && <span className="photo-tag-badge">{eventName}</span>}
+    <>
+      <div className="gallery-item" style={{ animationDelay: animDelay + "s", cursor: "pointer" }}
+           onClick={() => !err && setOpen(true)}>
+        {err
+          ? <PhotoPlaceholder idx={0} eventId={(photo.event_ids||[])[0]} />
+          : <img src={photo.url} alt={photo.orig_name || "photo"}
+                 style={{ width: "100%", display: "block" }}
+                 loading="lazy"
+                 onError={() => setErr(true)} />
+        }
+        <div className="gallery-item-overlay">
+          {eventName && <span className="photo-tag-badge">{eventName}</span>}
+          <span className="photo-tag-badge" style={{ background: "rgba(40,8,14,.7)", color: "var(--champagne-soft)" }}>
+            ↓
+          </span>
+        </div>
       </div>
-    </div>
+      {open && <PhotoLightbox photo={photo} onClose={() => setOpen(false)} />}
+    </>
   );
 }
 
