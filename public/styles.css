@@ -2348,30 +2348,33 @@ footer.foot .by {
   color: rgba(232, 200, 117, .55);
 }
 
-/* ── Gallery page main layout ── */
+/* ── Gallery page — natural scroll on all screen sizes ── */
 .gallery-main {
-  display: flex;
-  flex-direction: column;
-  height: 100vh;
-  overflow: hidden;
+  min-height: 100dvh;
+}
+
+.gallery-page-layout {
+  overflow: visible;
+  min-height: auto;
+}
+
+/* Filter bar sticks below nav on both desktop and mobile */
+.gallery-filter-wrap {
+  position: sticky;
+  top: 62px;
+  z-index: 20;
+  background: var(--ivory);
+  box-shadow: 0 4px 16px -4px rgba(92, 26, 36, .12);
+}
+
+.gallery-photo-scroll {
+  overflow-y: visible;
+  min-height: auto;
+  padding: 16px 0 100px;
 }
 
 @media (max-width: 640px) {
-  /* Switch to natural page scroll on mobile */
-  .gallery-main {
-    height: auto;
-    min-height: 100dvh;
-    overflow: visible;
-  }
-
-  /* Allow flex children to grow freely */
-  .gallery-page-layout {
-    flex: none;
-    min-height: auto;
-    overflow: visible;
-  }
-
-  /* Compact gallery header */
+  /* Compact gallery header on mobile */
   .gallery-top {
     padding: 8px 0 6px;
   }
@@ -2387,18 +2390,8 @@ footer.foot .by {
     margin: 2px 0 0 !important;
   }
 
-  /* Hide stats panel — count shown inline in filter row */
   .gallery-top-inner .gallery-stats {
     display: none;
-  }
-
-  /* Sticky filter bar just below the nav */
-  .gallery-filter-wrap {
-    position: sticky;
-    top: 62px;
-    z-index: 20;
-    background: var(--ivory);
-    box-shadow: 0 4px 16px -4px rgba(92, 26, 36, .12);
   }
 
   .gallery-filter-wrap .gallery-filters {
@@ -2413,7 +2406,7 @@ footer.foot .by {
     padding: 5px 0;
   }
 
-  /* Event chips scroll horizontally */
+  /* Event chips scroll horizontally on mobile */
   .gallery-filter-row .event-chip-row {
     flex-wrap: nowrap;
     overflow-x: auto;
@@ -2439,7 +2432,7 @@ footer.foot .by {
     flex-shrink: 0;
   }
 
-  /* Sort row: hide the label, keep chips + count compact */
+  /* Sort row: hide label, keep compact */
   .gallery-filters .gallery-filter-row:nth-child(3) .gallery-filter-label {
     display: none;
   }
@@ -2450,15 +2443,10 @@ footer.foot .by {
     gap: 8px;
   }
 
-  /* Photos fill the rest of the page naturally */
   .gallery-photo-scroll {
-    flex: none;
-    min-height: auto;
-    overflow-y: visible;
     padding: 12px 0 100px;
   }
 
-  /* Smaller photo cards — 2 columns, approx 150 px tall */
   .gallery-item img {
     min-height: 150px;
   }
