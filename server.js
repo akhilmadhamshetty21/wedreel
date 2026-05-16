@@ -113,7 +113,7 @@ app.post('/api/photos/:photoId/faces', async (req, res) => {
 });
 
 // List photos — url is already a Drive URL stored in DB
-app.get('/api/photos', (req, res) => {
+app.get('/api/photos', async (req, res) => {
   try {
     const { event = 'all', sort = 'recent', limit = '600' } = req.query;
     let photos = await db.getPhotos({ event, sort });
@@ -125,7 +125,7 @@ app.get('/api/photos', (req, res) => {
 });
 
 // All face descriptors with photo context
-app.get('/api/faces', (req, res) => {
+app.get('/api/faces', async (req, res) => {
   try {
     const faces = (await db.getFaces()).map(f => ({
       id:         f.id,
@@ -152,7 +152,7 @@ app.get('/api/img/:driveId', async (req, res) => {
 });
 
 // Stats
-app.get('/api/stats', (req, res) => {
+app.get('/api/stats', async (req, res) => {
   try { res.json(await db.stats()); }
   catch (err) { res.status(500).json({ error: err.message }); }
 });
