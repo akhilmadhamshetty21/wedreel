@@ -235,6 +235,18 @@ const Icon = {
       <circle cx="12" cy="13" r="3" />
     </svg>
   ),
+  Home: ({ s = 18 }) => (
+    <svg width={s} height={s} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
+      <path d="M3 10.5L12 3l9 7.5V21a1 1 0 0 1-1 1H4a1 1 0 0 1-1-1V10.5Z" />
+      <path d="M9 22V13h6v9" />
+    </svg>
+  ),
+  Grid: ({ s = 18 }) => (
+    <svg width={s} height={s} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
+      <rect x="3" y="3" width="8" height="8" rx="1.5" /><rect x="13" y="3" width="8" height="8" rx="1.5" />
+      <rect x="3" y="13" width="8" height="8" rx="1.5" /><rect x="13" y="13" width="8" height="8" rx="1.5" />
+    </svg>
+  ),
 };
 
 Object.assign(window, { Particles, Petals, Mandala, useReveal, Confetti, Icon });

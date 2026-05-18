@@ -255,18 +255,36 @@ section {
   max-width: 100%;
 }
 
-.nav-monogram {
-  width: 38px;
-  height: 38px;
-  border-radius: 999px;
-  display: grid;
+.nav-avatar {
+  width: 42px;
+  height: 42px;
+  border-radius: 50%;
+  overflow: hidden;
+  flex-shrink: 0;
+  box-shadow: 0 0 0 2px var(--gold), 0 0 0 4px rgba(201, 169, 97, .25);
+  background: linear-gradient(135deg, var(--maroon-deep), var(--maroon));
+  padding: 0;
+  position: relative;
+}
+
+.nav-avatar img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  object-position: center top;
+  border-radius: 50%;
+  display: block;
+}
+
+.nav-avatar-fallback {
+  display: none;
   place-items: center;
+  width: 100%;
+  height: 100%;
   color: var(--gold-2);
   font-family: var(--f-display);
-  font-size: 18px;
+  font-size: 16px;
   font-weight: 600;
-  background: linear-gradient(135deg, var(--maroon-deep), var(--maroon));
-  box-shadow: inset 0 0 0 1px var(--gold);
 }
 
 .nav-links {
@@ -307,90 +325,82 @@ section {
   background: linear-gradient(135deg, var(--gold-2), var(--gold));
 }
 
-.nav-burger {
-  display: none;
-  width: 38px;
-  height: 38px;
-  border-radius: 999px;
-  color: var(--gold-2);
-}
-
 @media (max-width: 820px) {
   .nav-links {
     display: none;
   }
 
-  .nav-burger {
-    display: grid;
-    place-items: center;
+  .nav-cta {
+    display: none;
   }
 
   .nav {
-    padding: 8px 8px 8px 12px;
+    padding: 6px 10px;
   }
 }
 
-.mobile-menu {
-  position: fixed;
-  inset: 0;
-  z-index: 60;
-  pointer-events: none;
-  background: rgba(40, 8, 14, 0);
-  transition: background .4s;
-}
-
-.mobile-menu.open {
-  background: rgba(40, 8, 14, .92);
-  pointer-events: auto;
-  backdrop-filter: blur(20px);
-}
-
-.mobile-menu-inner {
-  position: absolute;
-  inset: 0;
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  justify-content: center;
-  gap: 18px;
-  opacity: 0;
-  transform: translateY(20px);
-  transition: all .5s;
-}
-
-.mobile-menu.open .mobile-menu-inner {
-  opacity: 1;
-  transform: none;
-}
-
-.mobile-menu-inner button {
-  color: var(--champagne);
-  font-family: var(--f-display);
-  font-size: 32px;
-  font-weight: 500;
-}
-
-.mobile-menu-inner button:hover {
-  color: var(--gold-2);
-}
-
-.mobile-close {
-  position: absolute;
-  top: 24px;
-  right: 24px;
-  color: var(--gold-2);
-  font-size: 28px;
+/* ── Bottom tab bar (mobile only) ── */
+.bottom-tab-bar {
   display: none;
 }
 
-.mobile-menu.open .mobile-close {
-  display: grid;
-  place-items: center;
-  width: 44px;
-  height: 44px;
-  border-radius: 999px;
-  background: rgba(232, 200, 117, .12);
-  z-index: 10;
+@media (max-width: 820px) {
+  .bottom-tab-bar {
+    display: flex;
+    position: fixed;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    z-index: 50;
+    background: rgba(40, 8, 14, .94);
+    backdrop-filter: blur(20px);
+    -webkit-backdrop-filter: blur(20px);
+    border-top: 1px solid rgba(232, 200, 117, .22);
+    padding: 8px 0 calc(8px + env(safe-area-inset-bottom, 0px));
+  }
+
+  .bottom-tab-bar button {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 3px;
+    color: rgba(241, 227, 196, .5);
+    font-size: 10px;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    font-family: var(--f-body);
+    font-weight: 500;
+    padding: 6px 4px;
+    transition: color .2s;
+    border-radius: 12px;
+  }
+
+  .bottom-tab-bar button.active {
+    color: var(--gold-2);
+  }
+
+  .bottom-tab-bar button:hover {
+    color: var(--gold-2);
+  }
+
+  .bottom-tab-bar button.tab-upload {
+    color: var(--gold);
+  }
+
+  .bottom-tab-bar button.tab-upload:hover {
+    color: var(--gold-2);
+  }
+
+  /* Main content: pad bottom so last section clears the tab bar */
+  main {
+    padding-bottom: calc(72px + env(safe-area-inset-bottom, 0px));
+  }
+
+  /* Sticky upload fab hidden on mobile — tab bar handles it */
+  .sticky-upload {
+    display: none;
+  }
 }
 
 /* Sticky upload */
@@ -2685,10 +2695,5 @@ footer.foot .by {
   .btn {
     font-size: 11px;
     padding: 11px 18px;
-  }
-
-  /* Mobile menu: smaller font */
-  .mobile-menu-inner button {
-    font-size: 26px;
   }
 }
