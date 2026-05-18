@@ -4,17 +4,17 @@ const { useState: useStatePE, useEffect: useEffectPE } = React;
 /* ── Edit this array to add / remove videos ── */
 const PAST_VIDEOS = [
   {
-    id:       "N5qHz6y61eE",
-    title:    "Our Live Stream",
-    tag:      "Live",
-    date:     "2025",
+    id: "N5qHz6y61eE",
+    title: "Engagement Live Stream",
+    tag: "Live",
+    date: "2026",
     platform: "YouTube",
   },
   {
-    id:       "YBg3LIkdUD0",
-    title:    "Pre-Wedding Film",
-    tag:      "Pre-Wedding",
-    date:     "2025",
+    id: "YBg3LIkdUD0",
+    title: "Engagement Trailer",
+    tag: "Pre-Wedding",
+    date: "2025",
     platform: "YouTube",
   },
 ];
@@ -62,7 +62,7 @@ function VideoCard({ video, animDelay }) {
   return (
     <>
       <div className="pe-card reveal" style={{ animationDelay: animDelay + "s" }}
-           onClick={() => setOpen(true)}>
+        onClick={() => setOpen(true)}>
         <div className="pe-thumb">
           <img src={thumb} alt={video.title} onError={() => setThumbErr(true)} />
           <div className="pe-play">
