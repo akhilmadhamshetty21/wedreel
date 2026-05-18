@@ -135,7 +135,6 @@ function App() {
       </button>
 
       <main>
-        <PhotoShareSection onOpenUpload={() => setUploadOpen(true)} />
         <HeroSection data={data} onOpenUpload={() => setUploadOpen(true)} />
         <EventsSection />
         <GallerySection onOpenUpload={() => setUploadOpen(true)} totalPhotos={photoCount} />

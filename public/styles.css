@@ -390,6 +390,7 @@ section {
   height: 44px;
   border-radius: 999px;
   background: rgba(232, 200, 117, .12);
+  z-index: 10;
 }
 
 /* Sticky upload */
@@ -2612,5 +2613,82 @@ footer.foot .by {
   .modal > div[style*="padding"] {
     padding-top: 16px !important;
     padding-bottom: 16px !important;
+  }
+}
+
+/* ── iPhone 14 / narrow phones (≤390px) ── */
+@media (max-width: 400px) {
+  /* Nav: tighter so it doesn't overflow */
+  .nav {
+    gap: 4px;
+    padding: 6px 6px 6px 10px;
+  }
+
+  .nav-cta {
+    padding: 8px 12px;
+    font-size: 10px;
+  }
+
+  /* Hero: slightly smaller names to breathe */
+  .hero {
+    padding: 120px 4vw 60px;
+  }
+
+  .hero .name {
+    font-size: 48px;
+  }
+
+  .hero .ampersand {
+    font-size: 68px;
+  }
+
+  .hero .hashtag {
+    font-size: 24px;
+  }
+
+  .hero .date-row {
+    gap: 10px;
+    font-size: 11px;
+    letter-spacing: 0.2em;
+  }
+
+  .hero .date-row::before,
+  .hero .date-row::after {
+    width: 28px;
+  }
+
+  /* Countdown: tighter on narrow screens */
+  .countdown {
+    gap: 8px;
+    margin-top: 24px;
+  }
+
+  .cd-cell {
+    padding: 12px 4px;
+  }
+
+  /* Section headings: prevent overflow */
+  .section-head h2 {
+    font-size: clamp(28px, 8vw, 44px);
+  }
+
+  /* Event cards: tighter padding */
+  .event-card {
+    padding: 16px;
+  }
+
+  .event-head {
+    gap: 10px;
+  }
+
+  /* Buttons: smaller text on narrow screens */
+  .btn {
+    font-size: 11px;
+    padding: 11px 18px;
+  }
+
+  /* Mobile menu: smaller font */
+  .mobile-menu-inner button {
+    font-size: 26px;
   }
 }
