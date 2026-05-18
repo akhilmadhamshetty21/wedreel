@@ -77,6 +77,7 @@ function App() {
   const navLinks = [
     { id: "hero", label: "Home" },
     { id: "events", label: "Events" },
+    { id: "past-events", label: "Archives" },
     { id: "gallery", label: "Gallery", href: "/gallery" },
   ];
 
@@ -104,7 +105,9 @@ function App() {
           </button>
           <div className="nav-links">
             {navLinks.map(l => (
-              <button key={l.id} onClick={() => scrollTo(l.id, l.href)}>{l.label}</button>
+              <button key={l.id}
+                className={activeTab === l.id ? "current" : ""}
+                onClick={() => scrollTo(l.id, l.href)}>{l.label}</button>
             ))}
           </div>
           <button className="nav-cta" onClick={() => setUploadOpen(true)}>Upload</button>
@@ -120,19 +123,23 @@ function App() {
       {/* Bottom tab bar (mobile only) */}
       <nav className="bottom-tab-bar">
         <button className={activeTab === "hero" ? "active" : ""} onClick={() => scrollTo("hero")}>
-          <Icon.Home s={22} />
+          <Icon.Home s={20} />
           <span>Home</span>
         </button>
         <button className={activeTab === "events" ? "active" : ""} onClick={() => scrollTo("events")}>
-          <Icon.Cal s={22} />
+          <Icon.Cal s={20} />
           <span>Events</span>
         </button>
+        <button className={activeTab === "past-events" ? "active" : ""} onClick={() => scrollTo("past-events")}>
+          <Icon.Flame s={20} />
+          <span>Archives</span>
+        </button>
         <button onClick={() => scrollTo("gallery", "/gallery")}>
-          <Icon.Grid s={22} />
+          <Icon.Grid s={20} />
           <span>Gallery</span>
         </button>
         <button className="tab-upload" onClick={() => setUploadOpen(true)}>
-          <Icon.Camera s={22} />
+          <Icon.Camera s={20} />
           <span>Upload</span>
         </button>
       </nav>
@@ -140,6 +147,7 @@ function App() {
       <main>
         <HeroSection data={data} onOpenUpload={() => setUploadOpen(true)} />
         <EventsSection />
+        <PastEventsSection />
         <GallerySection onOpenUpload={() => setUploadOpen(true)} totalPhotos={photoCount} />
         <FooterSection data={data} />
       </main>

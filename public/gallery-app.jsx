@@ -31,6 +31,7 @@ function GalleryApp() {
   const navLinks = [
     { label: "Home", href: "/" },
     { label: "Events", href: "/#events" },
+    { label: "Archives", href: "/#past-events" },
     { label: "Gallery", href: null },
   ];
 
