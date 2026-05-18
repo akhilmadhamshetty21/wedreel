@@ -24,29 +24,18 @@ function GalleryApp() {
   const [t, setTweak] = window.useTweaks(GA_TWEAK_DEFAULTS);
   const [uploadOpen, setUploadOpen] = useStateGA(false);
   const [confetti, setConfetti] = useStateGA(false);
-  const [mobileMenu, setMobileMenu] = useStateGA(false);
 
   useReveal();
   useEffectGA(() => { applyGAPalette(t.palette); }, [t.palette]);
 
-  const data = {
-    bride: "Samyuktha", groom: "Akhil",
-    hashtag: "#Sakhi",
-    dateDisplay: "June 20-27, 2026",
-    cityShort: "Hyderabad, India",
-  };
-
   const navLinks = [
     { label: "Home", href: "/" },
     { label: "Events", href: "/#events" },
-    { label: "Gallery", href: null },       // current page
+    { label: "Gallery", href: null },
   ];
 
   function navigate(l) {
-    setMobileMenu(false);
     if (l.href) { window.location.href = l.href; return; }
-    const el = document.getElementById("gallery");
-    if (el) el.scrollIntoView({ behavior: "smooth", block: "start" });
   }
 
   return (
@@ -58,7 +47,12 @@ function GalleryApp() {
       {/* Nav */}
       <div className="nav-wrap">
         <div className="nav">
-          <div className="nav-monogram">S&amp;A</div>
+          <button className="nav-avatar" onClick={() => window.location.href = "/"} aria-label="Home">
+            <img src="/couple.jpg" alt="S&A"
+              onError={e => { e.target.style.display = "none"; e.target.nextSibling.style.display = "grid"; }}
+            />
+            <span className="nav-avatar-fallback">S&amp;A</span>
+          </button>
           <div className="nav-links">
             {navLinks.map(l => (
               <button key={l.label} onClick={() => navigate(l)}
@@ -68,35 +62,34 @@ function GalleryApp() {
             ))}
           </div>
           <button className="nav-cta" onClick={() => setUploadOpen(true)}>Upload</button>
-          <button className="nav-burger" onClick={() => setMobileMenu(true)} aria-label="Menu">
-            <Icon.Menu s={20} />
-          </button>
         </div>
       </div>
 
-      {/* Mobile menu */}
-      <div className={"mobile-menu " + (mobileMenu ? "open" : "")}>
-        <button className="mobile-close" onClick={() => setMobileMenu(false)} aria-label="Close">
-          <Icon.Close s={26} />
-        </button>
-        <div className="mobile-menu-inner">
-          {navLinks.map(l => (
-            <button key={l.label} onClick={() => navigate(l)}>{l.label}</button>
-          ))}
-          <button onClick={() => { setMobileMenu(false); setUploadOpen(true); }}
-            style={{
-              marginTop: 16, fontFamily: "var(--f-body)", fontSize: 13,
-              letterSpacing: ".24em", color: "var(--gold-2)", textTransform: "uppercase"
-            }}>
-            ↑ Upload Photos
-          </button>
-        </div>
-      </div>
-
+      {/* Sticky upload fab (desktop only) */}
       <button className="sticky-upload" onClick={() => setUploadOpen(true)} aria-label="Upload Photos">
         <Icon.Upload s={16} />
         <span className="label">Upload Photos</span>
       </button>
+
+      {/* Bottom tab bar (mobile only) */}
+      <nav className="bottom-tab-bar">
+        <button onClick={() => window.location.href = "/"}>
+          <Icon.Home s={22} />
+          <span>Home</span>
+        </button>
+        <button onClick={() => window.location.href = "/#events"}>
+          <Icon.Cal s={22} />
+          <span>Events</span>
+        </button>
+        <button className="active">
+          <Icon.Grid s={22} />
+          <span>Gallery</span>
+        </button>
+        <button className="tab-upload" onClick={() => setUploadOpen(true)}>
+          <Icon.Camera s={22} />
+          <span>Upload</span>
+        </button>
+      </nav>
 
       <main className="gallery-main" style={{ paddingTop: 86 }}>
         <FullGallery onOpenUpload={() => setUploadOpen(true)} />
