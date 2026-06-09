@@ -118,4 +118,20 @@ async function deletePhoto(id) {
   fWrite(data);
 }
 
-module.exports = { insertPhotos, insertFaces, getPhoto, getPhotos, getFaces, stats, deletePhoto };
+async function getLiveUrl() {
+  if (USE_REDIS) return (await redis('GET', 'w:live_url')) || null;
+  return fRead().liveUrl || null;
+}
+
+async function setLiveUrl(url) {
+  if (USE_REDIS) {
+    if (url) await redis('SET', 'w:live_url', url);
+    else await redis('DEL', 'w:live_url');
+    return;
+  }
+  const data = fRead();
+  data.liveUrl = url || null;
+  fWrite(data);
+}
+
+module.exports = { insertPhotos, insertFaces, getPhoto, getPhotos, getFaces, stats, deletePhoto, getLiveUrl, setLiveUrl };

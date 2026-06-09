@@ -171,6 +171,22 @@ app.delete('/api/photos/:photoId', async (req, res) => {
   }
 });
 
+// Live stream URL — GET returns current, POST sets/clears (admin only)
+app.get('/api/live', async (req, res) => {
+  try { res.json({ url: await db.getLiveUrl() }); }
+  catch (err) { res.status(500).json({ error: err.message }); }
+});
+
+app.post('/api/live', async (req, res) => {
+  try {
+    const { key, url } = req.body;
+    if (!process.env.ADMIN_KEY || key !== process.env.ADMIN_KEY)
+      return res.status(401).json({ error: 'Unauthorized' });
+    await db.setLiveUrl(url || null);
+    res.json({ success: true, url: url || null });
+  } catch (err) { res.status(500).json({ error: err.message }); }
+});
+
 // Stats
 app.get('/api/stats', async (req, res) => {
   try { res.json(await db.stats()); }

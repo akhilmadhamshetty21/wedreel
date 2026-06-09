@@ -55,6 +55,13 @@ function App() {
   const [confetti, setConfetti] = useState(false);
   const [photoCount, setPhotoCount] = useState(null);
   const [activeTab, setActiveTab] = useState("hero");
+  const [liveUrl, setLiveUrl] = useState(null);
+  const [adminInput, setAdminInput] = useState("");
+  const [adminSaving, setAdminSaving] = useState(false);
+  const [adminOpen, setAdminOpen] = useState(false);
+
+  const adminKey = new URLSearchParams(window.location.search).get('key') || '';
+  const isAdmin = adminKey.length > 0;
 
   useReveal();
 
@@ -66,7 +73,45 @@ function App() {
       .then(r => r.json())
       .then(d => setPhotoCount(d.total_photos ?? 0))
       .catch(() => { });
-  }, [uploadOpen]); // refresh after each upload session closes
+  }, [uploadOpen]);
+
+  // Poll live URL every 30s
+  useEffect(() => {
+    function fetchLive() {
+      fetch('/api/live').then(r => r.json()).then(d => {
+        setLiveUrl(d.url || null);
+        if (d.url) setAdminInput(d.url);
+      }).catch(() => {});
+    }
+    fetchLive();
+    const id = setInterval(fetchLive, 30000);
+    return () => clearInterval(id);
+  }, []);
+
+  async function saveLiveUrl() {
+    setAdminSaving(true);
+    try {
+      await fetch('/api/live', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ key: adminKey, url: adminInput.trim() || null }),
+      });
+      setLiveUrl(adminInput.trim() || null);
+    } finally { setAdminSaving(false); }
+  }
+
+  async function clearLive() {
+    setAdminSaving(true);
+    try {
+      await fetch('/api/live', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ key: adminKey, url: null }),
+      });
+      setLiveUrl(null);
+      setAdminInput("");
+    } finally { setAdminSaving(false); }
+  }
 
   const data = {
     bride: t.bride, groom: t.groom, hashtag: t.hashtag,
@@ -143,6 +188,48 @@ function App() {
           <span>Upload</span>
         </button>
       </nav>
+
+      {/* Live stream banner — visible to all when active */}
+      {liveUrl && (
+        <a href={liveUrl} target="_blank" rel="noopener noreferrer" className="live-banner">
+          <span className="live-dot" />
+          <span>Live Now</span>
+          <span className="live-cta">Watch →</span>
+        </a>
+      )}
+
+      {/* Admin panel — only when ?key= is in URL */}
+      {isAdmin && (
+        <div className="admin-live-panel">
+          <button className="admin-live-toggle" onClick={() => setAdminOpen(o => !o)}>
+            🔐 {adminOpen ? "Close" : "Live Settings"}
+          </button>
+          {adminOpen && (
+            <div className="admin-live-body">
+              <p className="admin-live-status">
+                {liveUrl ? "🔴 Stream is LIVE" : "⚫ No active stream"}
+              </p>
+              <input
+                className="admin-live-input"
+                type="url"
+                placeholder="Paste YouTube live URL…"
+                value={adminInput}
+                onChange={e => setAdminInput(e.target.value)}
+              />
+              <div className="admin-live-actions">
+                <button className="admin-live-go" onClick={saveLiveUrl} disabled={adminSaving}>
+                  {adminSaving ? "Saving…" : "Go Live"}
+                </button>
+                {liveUrl && (
+                  <button className="admin-live-end" onClick={clearLive} disabled={adminSaving}>
+                    End Stream
+                  </button>
+                )}
+              </div>
+            </div>
+          )}
+        </div>
+      )}
 
       <main>
         <HeroSection data={data} onOpenUpload={() => setUploadOpen(true)} />
