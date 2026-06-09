@@ -87,15 +87,30 @@ function PhotoLightbox({ photo, onClose }) {
 }
 
 /* ── Single gallery photo card ── */
-function GalleryPhotoCard({ photo, animDelay }) {
+function GalleryPhotoCard({ photo, animDelay, isAdmin, adminKey, onDelete }) {
   const [err, setErr] = useStateG(false);
   const [open, setOpen] = useStateG(false);
+  const [confirmDelete, setConfirmDelete] = useStateG(false);
+  const [deleting, setDeleting] = useStateG(false);
+
   const eventName = (window.EVENT_DATA || []).find(e => (photo.event_ids || []).includes(e.id))?.name
                      || (photo.event_ids?.[0] || "");
+
+  async function handleDelete(e) {
+    e.stopPropagation();
+    if (!confirmDelete) { setConfirmDelete(true); return; }
+    setDeleting(true);
+    try {
+      const res = await fetch(`/api/photos/${photo.id}?key=${encodeURIComponent(adminKey)}`, { method: 'DELETE' });
+      if (res.ok) onDelete(photo.id);
+      else { alert('Delete failed'); setDeleting(false); setConfirmDelete(false); }
+    } catch { setDeleting(false); setConfirmDelete(false); }
+  }
+
   return (
     <>
-      <div className="gallery-item" style={{ animationDelay: animDelay + "s", cursor: "pointer" }}
-           onClick={() => !err && setOpen(true)}>
+      <div className="gallery-item" style={{ animationDelay: animDelay + "s", cursor: "pointer", position: "relative" }}
+           onClick={() => !err && !confirmDelete && setOpen(true)}>
         {err
           ? <PhotoPlaceholder idx={0} eventId={(photo.event_ids||[])[0]} />
           : <img src={photo.url} alt={photo.orig_name || "photo"}
@@ -105,10 +120,28 @@ function GalleryPhotoCard({ photo, animDelay }) {
         }
         <div className="gallery-item-overlay">
           {eventName && <span className="photo-tag-badge">{eventName}</span>}
-          <span className="photo-tag-badge" style={{ background: "rgba(40,8,14,.7)", color: "var(--champagne-soft)" }}>
-            ↓
-          </span>
+          <span className="photo-tag-badge" style={{ background: "rgba(40,8,14,.7)", color: "var(--champagne-soft)" }}>↓</span>
         </div>
+
+        {isAdmin && !confirmDelete && (
+          <button className="admin-delete-btn" onClick={handleDelete} title="Delete photo">
+            🗑
+          </button>
+        )}
+
+        {isAdmin && confirmDelete && (
+          <div className="admin-confirm-overlay" onClick={e => e.stopPropagation()}>
+            <p>Delete this photo?</p>
+            <div style={{ display: "flex", gap: 8 }}>
+              <button className="admin-confirm-yes" onClick={handleDelete} disabled={deleting}>
+                {deleting ? "…" : "Delete"}
+              </button>
+              <button className="admin-confirm-no" onClick={e => { e.stopPropagation(); setConfirmDelete(false); }}>
+                Cancel
+              </button>
+            </div>
+          </div>
+        )}
       </div>
       {open && <PhotoLightbox photo={photo} onClose={() => setOpen(false)} />}
     </>
@@ -118,7 +151,7 @@ function GalleryPhotoCard({ photo, animDelay }) {
 /* ============================================================
    FullGallery
 ============================================================ */
-function FullGallery({ onOpenUpload }) {
+function FullGallery({ onOpenUpload, isAdmin, adminKey }) {
   const [photos,     setPhotos]     = useStateG([]);
   const [faces,      setFaces]      = useStateG([]);
   const [clusters,   setClusters]   = useStateG([]);
@@ -341,7 +374,9 @@ function FullGallery({ onOpenUpload }) {
               </div>
             )}
             {!loading && displayPhotos.map((p, i) => (
-              <GalleryPhotoCard key={p.id} photo={p} animDelay={Math.min(i, 30) * 0.02} />
+              <GalleryPhotoCard key={p.id} photo={p} animDelay={Math.min(i, 30) * 0.02}
+                isAdmin={isAdmin} adminKey={adminKey}
+                onDelete={id => setPhotos(prev => prev.filter(x => x.id !== id))} />
             ))}
           </div>
           <div style={{ textAlign: "center", padding: "32px 0" }}>

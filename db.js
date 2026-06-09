@@ -99,4 +99,23 @@ async function stats() {
   return { total_photos: photos.length, total_faces: faces.length, event_counts: eventCounts };
 }
 
-module.exports = { insertPhotos, insertFaces, getPhoto, getPhotos, getFaces, stats };
+async function deletePhoto(id) {
+  if (USE_REDIS) {
+    const [photoRaw, faceRaw] = await Promise.all([
+      redis('LRANGE', 'w:photos', '0', '-1'),
+      redis('LRANGE', 'w:faces',  '0', '-1'),
+    ]);
+    const photoMatch = photoRaw.find(s => { try { return JSON.parse(s).id === id; } catch { return false; } });
+    if (photoMatch) await redis('LREM', 'w:photos', '1', photoMatch);
+    for (const s of faceRaw) {
+      try { if (JSON.parse(s).photo_id === id) await redis('LREM', 'w:faces', '1', s); } catch {}
+    }
+    return;
+  }
+  const data = fRead();
+  data.photos = data.photos.filter(p => p.id !== id);
+  data.faces  = data.faces.filter(f => f.photo_id !== id);
+  fWrite(data);
+}
+
+module.exports = { insertPhotos, insertFaces, getPhoto, getPhotos, getFaces, stats, deletePhoto };

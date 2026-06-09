@@ -25,6 +25,9 @@ function GalleryApp() {
   const [uploadOpen, setUploadOpen] = useStateGA(false);
   const [confetti, setConfetti] = useStateGA(false);
 
+  const adminKey = new URLSearchParams(window.location.search).get('key') || '';
+  const isAdmin = adminKey.length > 0;
+
   useReveal();
   useEffectGA(() => { applyGAPalette(t.palette); }, [t.palette]);
 
@@ -92,8 +95,14 @@ function GalleryApp() {
         </button>
       </nav>
 
-      <main className="gallery-main" style={{ paddingTop: 86 }}>
-        <FullGallery onOpenUpload={() => setUploadOpen(true)} />
+      {isAdmin && (
+        <div className="admin-banner">
+          🔐 Admin mode — trash icons are visible only to you
+        </div>
+      )}
+
+      <main className="gallery-main" style={{ paddingTop: isAdmin ? 116 : 86 }}>
+        <FullGallery onOpenUpload={() => setUploadOpen(true)} isAdmin={isAdmin} adminKey={adminKey} />
       </main>
 
       {uploadOpen && (

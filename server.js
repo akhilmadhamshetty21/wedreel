@@ -151,6 +151,26 @@ app.get('/api/img/:driveId', async (req, res) => {
   }
 });
 
+// Delete photo — admin only
+app.delete('/api/photos/:photoId', async (req, res) => {
+  try {
+    const { key } = req.query;
+    if (!process.env.ADMIN_KEY || key !== process.env.ADMIN_KEY)
+      return res.status(401).json({ error: 'Unauthorized' });
+
+    const photo = await db.getPhoto(req.params.photoId);
+    if (!photo) return res.status(404).json({ error: 'Not found' });
+
+    await db.deletePhoto(req.params.photoId);
+    if (photo.drive_id) {
+      try { await drive.deleteFile(photo.drive_id); } catch {}
+    }
+    res.json({ success: true });
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
+});
+
 // Stats
 app.get('/api/stats', async (req, res) => {
   try { res.json(await db.stats()); }
