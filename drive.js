@@ -73,7 +73,7 @@ async function streamFile(driveId, res) {
   );
   const ct = response.headers['content-type'] || 'image/jpeg';
   res.setHeader('Content-Type', ct);
-  res.setHeader('Cache-Control', 'public, max-age=31536000, immutable');
+  res.setHeader('Cache-Control', 'private, max-age=86400');
   response.data.pipe(res);
 }
 
